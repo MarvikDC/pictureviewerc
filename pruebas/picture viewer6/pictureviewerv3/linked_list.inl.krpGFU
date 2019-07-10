@@ -1,0 +1,153 @@
+#include"linked_list.h"
+
+template <class T>
+struct linked_list<T>::node
+{
+     T dato;
+        node *p_next;
+        node *p_back;
+        node(const T&d, node *n=nullptr, node *n_b=nullptr)
+        {
+            dato=d;
+            p_next=n;
+            p_back=n_b;
+        }
+};
+
+template <class T>
+class linked_list<T>::iterator
+{
+    private:
+        node *n;
+    public:
+        iterator(node *_n=nullptr)
+        {
+            n=_n;
+        }
+        ~iterator()=default;
+        T &operator *()
+        {
+            return n->dato;
+        }
+        iterator &operator ++()
+        {
+            n=n->p_next;
+            return *this;
+        }
+        iterator &operator --()
+        {
+            n = n->p_back;
+            return *this;
+        }
+        bool operator!=(const iterator &it)
+        {
+            return n!=it.n;
+        }
+};
+
+template <class T>
+linked_list<T>::linked_list():p_head(nullptr){}
+
+template <class T>
+linked_list<T>::~linked_list()
+{
+    node *del=p_head;
+    while(del)
+    {
+        p_head=del->p_next;
+        delete del;
+        del=p_head;
+    }
+}
+
+
+template <class T>
+void linked_list<T>::push_front(const T &d)
+{
+    if(!p_head)
+    {
+        p_head=new node(d, nullptr, nullptr);
+    }
+    else
+    {
+        node *aux=p_head;
+        p_head= new node(d,p_head,nullptr);
+        aux->p_back=p_head;
+    }
+}
+
+template <class T>
+void linked_list<T>::remove_front()
+{
+    node *del=p_head;
+    p_head=p_head->p_next;
+    p_head->p_back=nullptr;
+    delete del;
+}
+
+template <class T>
+class linked_list<T>::iterator linked_list<T>::begin()
+//iterator linked_list<T>::begin()
+{
+    return iterator (p_head);
+}
+template <class T>
+class linked_list<T>::iterator linked_list<T>::end()
+{
+    return iterator(nullptr);
+}
+template <class T>
+class linked_list<T>::iterator linked_list<T>::rbegin()
+{
+    node *aux1;
+    node *aux2;
+    aux1=p_head;
+    while (aux1!=nullptr)
+    {
+        aux2=aux1;
+        aux1=aux1->p_next;
+    }
+
+    return iterator (aux2);
+}
+template <class T>
+class linked_list<T>::iterator linked_list<T>::rend()
+{
+    return iterator(nullptr);
+}
+
+template <class T>
+void linked_list<T>::push_back(const T &d)
+{
+    if(p_head)
+    {
+        node *aux1;
+        node *aux2;
+        aux1=p_head;
+        while (aux1!=nullptr)
+        {
+            aux2=aux1;
+            aux1=aux1->p_next;
+        }
+        aux2->p_next=new node(d,nullptr,aux2);
+    }
+    else
+    {
+                push_front(d);
+    }
+
+}
+
+template <class T>
+void linked_list<T>::remove_back()
+{
+    node *previus=p_head;
+    node *aux1=p_head ->p_next;
+    while (previus->p_next->p_next!=nullptr)
+    {
+        previus=aux1;
+        aux1=aux1 ->p_next;
+    }
+    delete aux1;
+    previus->p_next=nullptr;
+}

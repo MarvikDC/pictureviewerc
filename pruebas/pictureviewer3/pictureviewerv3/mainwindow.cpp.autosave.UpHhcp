@@ -1,0 +1,215 @@
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+#include<fstream>
+
+#include<QPixmap>
+#include"linked_list.h"
+#include"picture.h"
+#include<QFileDialog>
+
+MainWindow::MainWindow(QWidget *parent) :
+    QMainWindow(parent),
+    ui(new Ui::MainWindow)
+{
+    ui->setupUi(this);
+    ui->push_acept->setVisible(0);
+    load_list(Lpictures);
+   //*
+    //"simulation:
+    string nombre="name1";
+    string path="C:/Users/alogistica2/Dropbox (Personal)/ULS/S3/LP2/CLASES/0-final/qt/pictureviewer3/pictureviewerv3/images/0img";
+    string nombre2="name2";
+    string path2="C:/Users/alogistica2/Dropbox (Personal)/ULS/S3/LP2/CLASES/0-final/qt/pictureviewer3/pictureviewerv3/images/1pic";
+    string nombre3="name3";
+    string path3="C:/Users/alogistica2/Dropbox (Personal)/ULS/S3/LP2/CLASES/0-final/qt/pictureviewer3/pictureviewerv3/images/2bart";
+    string nombre4="name4";
+    string path4="C:/Users/alogistica2/Dropbox (Personal)/ULS/S3/LP2/CLASES/0-final/qt/pictureviewer3/pictureviewerv3/images/3hulk";
+    picture a(nombre,path);
+    picture a1(nombre2,path2);
+    picture a3(nombre3,path3);
+    picture a4(nombre4,path4);
+
+
+    //wall_paper=path;
+    //Qstr=QString::fromStdString(wall_paper);
+    //pix=QPixmap(Qstr);
+
+    //ui->label_picture->setPixmap(pix);
+    Lpictures.push_front(a3)
+    Lpictures.push_front(a3);
+    Lpictures.push_front(a1);
+    Lpictures.push_front(a);
+    //Lpictures.push_back(a4);
+
+    //*/
+
+    it=Lpictures.begin();
+    Qstr=QString::fromStdString((*it).path);
+
+
+    pix=QPixmap(Qstr);
+    //ui->label_picture->clear();
+    ui->label_picture->setPixmap(pix);
+    ui->line_path->setText(Qstr);
+    Qstr=QString::fromStdString((*it).name);
+    ui->line_name->setText(Qstr);
+
+}
+
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+void MainWindow::on_push_previus_clicked()
+{
+
+    if(it != Lpictures.begin())
+    {
+        --it;
+    }
+    else
+    {
+        it=Lpictures.rbegin();
+    }
+
+    QString Qstr;
+    Qstr=QString::fromStdString((*it).path);
+    pix=QPixmap(Qstr);
+    ui->label_picture->clear();
+    ui->label_picture->setPixmap(pix);
+    ui->line_path->setText(Qstr);
+    Qstr=QString::fromStdString((*it).name);
+    ui->line_name->setText(Qstr);
+
+}
+
+void MainWindow::on_push_next_clicked()
+{
+    if(it != Lpictures.rbegin())
+    {
+        ++it;
+    }
+    else
+    {
+        it=Lpictures.begin();
+    }
+
+    Qstr=QString::fromStdString((*it).path);
+    pix=QPixmap(Qstr);
+    ui->label_picture->clear();
+    ui->label_picture->setPixmap(pix);
+    ui->line_path->setText(Qstr);
+    Qstr=QString::fromStdString((*it).name);
+    ui->line_name->setText(Qstr);
+}
+
+
+void MainWindow::add_picture(linked_list<picture>&li)
+{
+    QString tmp_name = ui->line_name->text();
+    QString tmp_path = ui->line_path->text();
+    picture tmp_picture(tmp_name.toStdString(),tmp_path.toStdString());
+    li.push_back(tmp_picture);
+
+}
+
+
+void MainWindow::on_push_delete_clicked()
+{
+
+    Lpictures.remove_this(it);
+    ui->push_next->click();
+
+}
+
+void MainWindow::on_push_save_clicked()
+{
+    save_list(Lpictures);
+}
+
+void MainWindow::on_push_add_clicked()
+{
+    ui->push_acept->setVisible(1);
+    ui->line_path->clear();
+    ui->line_name->clear();
+    ui->label_picture->clear();
+
+    ui->line_name->setEnabled(1);
+    ui->line_path->setEnabled(1);
+}
+
+
+
+void MainWindow::on_push_acept_clicked()
+{
+    add_picture(Lpictures);
+
+    ui->line_name->setEnabled(0);
+    ui->line_path->setEnabled(0);
+
+    it=Lpictures.rbegin();
+    Qstr=QString::fromStdString((*it).path);
+    pix=QPixmap(Qstr);
+    ui->label_picture->setPixmap(pix);
+    ui->push_acept->setVisible(0);
+}
+
+void MainWindow::save_list(linked_list<picture> &Val)
+{
+    ofstream fsbin;
+        fsbin.open("binout.dat",ios::binary);
+        int size=0;
+        for(auto e:Val)size++;
+        for(linked_list<picture>::iterator it=Lpictures.begin();it!=Lpictures.end();++it)
+            {
+                //fsbin.write((char*)&(*(it)).name,sizeof(int));
+                //int size_str=Va1[i].str.size();
+                //std::cout<<"tamanio de string a grabar"<<size_str<<endl;
+                int size_str=(*(it)).name.size();
+                fsbin.write((char*)&size_str,sizeof(size_str));
+                fsbin.write((*(it)).name.c_str(),size_str);
+
+                int size_str_p=(*(it)).path.size();
+                fsbin.write((char*)&size_str_p,sizeof(size_str_p));
+                //    casting char //modulo del tamaño de str del tipo A en la posicion I//tamaño en bytes del modulo antes mencionado
+                fsbin.write((*(it)).path.c_str(),size_str_p);
+                //c_str : metodo de la clase string que devuelve un puntero a char de una cadena
+            }
+        fsbin.close();
+}
+void MainWindow::load_list(linked_list<picture> &Va2)
+{
+    ifstream binfs;
+        binfs.open("binout.dat",ios::binary);
+        picture load;
+        //int x_tmp, size_tmp;
+        int size_tmp1;
+        int size_tmp2;
+        //while (binfs.read((char*)&x_tmp,sizeof(int)))
+        while (binfs.read((char*)&size_tmp1,sizeof(int)))
+        {
+            //load.x=x_tmp;
+            //binfs.read((char*)&size_tmp1,sizeof(int));
+            //std::cout<<"size_temp: tamanio del string a leer"<<size_tmp<<std::endl;
+           // cout<<"size of sizetemp:"<<sizeof(size_tmp)<<endl;
+            char *char_tmp1=new char[size_tmp1];
+            binfs.read(char_tmp1,size_tmp1);
+            //char_tmp1[size_tmp1]='/0';
+            load.name=char_tmp1;
+
+            binfs.read((char*)&size_tmp2,sizeof(int));
+            char *char_tmp2=new char[size_tmp2];
+            //char_tmp2[size_tmp2]='/0';
+            binfs.read(char_tmp2,size_tmp2);
+            load.path=char_tmp2;
+
+
+
+            Va2.push_back(load);
+            delete []char_tmp1;
+            delete []char_tmp2;
+        }
+        binfs.close();
+}
